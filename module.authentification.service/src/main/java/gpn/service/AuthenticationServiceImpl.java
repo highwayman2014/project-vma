@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchResult;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AuthenticationServiceImpl implements IAuthenticationService {
@@ -31,7 +33,7 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
     private IClaimsService claimsService;
 
     @Override
-    public String getAuthToken(String userName) throws UserNotFoundException, ApplicationException {
+    public String getAuthToken(Map<String, String> userInfo) throws UserNotFoundException, ApplicationException {
 //        SearchResult searchResult;
 //        try {
 //            searchResult = ldapService.findAccountByAccountName(userName);
@@ -42,29 +44,36 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
 //            throw new UserNotFoundException();
 //        }
 
+        String userName = userInfo.get("username");
         SystemUser sUser = new SystemUser();
         sUser.setUserName(userName);
-        sUser.setDomainName("-");
-        sUser.setDisplayName("-");
-        sUser.setEmail("-");
+        sUser.setDomainName(userInfo.get("domainName"));
+        sUser.setDisplayName(userInfo.get("displayName"));
+        sUser.setEmail(userInfo.get("email"));
         sUser.setGuid("-");
+        sUser.setId(0L);
+
+        // Передадим полученные данные через поле Claims
+        List<Claim> claims = new ArrayList<>();
+        userInfo.forEach((type, value) -> claims.add(new Claim(type, value)));
+        sUser.setClaims(claims);
 //        try {
 //            fillAttributes(sUser, searchResult);
 //        } catch (NamingException e) {
 //            throw new ApplicationException(e);
 //        }
 
-        SystemUser cUser = userService.getUser(sUser.getUserName());
-        boolean isNewUser = userService.update(sUser);
-        if (isNewUser) {
-            List<Claim> defaultClaims = claimsService.getDefaultUserClaims();
-            claimsService.updateClaims(sUser.getId(), defaultClaims);
-        }
-
-        if (cUser != null) {
-            sUser.setId(cUser.getId());
-            sUser.setClaims(userService.getClaims(sUser.getId()));
-        }
+//        SystemUser cUser = userService.getUser(sUser.getUserName());
+//        boolean isNewUser = userService.update(sUser);
+//        if (isNewUser) {
+//            List<Claim> defaultClaims = claimsService.getDefaultUserClaims();
+//            claimsService.updateClaims(sUser.getId(), defaultClaims);
+//        }
+//
+//        if (cUser != null) {
+//            sUser.setId(cUser.getId());
+//            sUser.setClaims(userService.getClaims(sUser.getId()));
+//        }
 
 //        SystemUser sUser = new SystemUser();
 

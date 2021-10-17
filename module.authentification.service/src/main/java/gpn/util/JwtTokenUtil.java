@@ -56,14 +56,14 @@ public class JwtTokenUtil implements Serializable {
         Map<String, Object> allClaims = new HashMap<>();
         allClaims.put("id", sUser.getId());
 
-        List<String> claims = new ArrayList<>();
-        if (sUser.getClaims() != null) {
-            for (Claim cl : sUser.getClaims()) {
-                claims.add(cl.getValue());
-            }
-        }
+//        List<String> claims = new ArrayList<>();
+//        if (sUser.getClaims() != null) {
+//            for (Claim cl : sUser.getClaims()) {
+//                claims.add(cl.getValue());
+//            }
+//        }
 
-        allClaims.put(keyRole, claims);
+        allClaims.put(keyRole, sUser.getClaims());
 
         return doGenerateToken(allClaims, userDetails.getUsername());
     }

@@ -18,8 +18,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Component
@@ -41,7 +41,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String username = null;
         String jwtToken = null;
         Integer id = null;
-        List<Claim> claims = new ArrayList<>();
+        //List<Claim> claims = new ArrayList<>();
+        List<Claim> userClaims = new ArrayList<>();
 // JWT Token is in the form "Bearer token". Remove Bearer word and get
 // only the Token
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
@@ -49,7 +50,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             try {
                 username = jwtTokenUtil.getUsernameFromToken(jwtToken);
                 id = (Integer) jwtTokenUtil.getAllClaimsFromToken(jwtToken).remove("id");
-                claims = (List<Claim>) jwtTokenUtil.getAllClaimsFromToken(jwtToken).get(keyRole);
+                List<LinkedHashMap<String, String>> claims = (List<LinkedHashMap<String, String>>) jwtTokenUtil.getAllClaimsFromToken(jwtToken).get(keyRole);
+                userClaims = claims.stream().map((v)-> new Claim(v.get("type"), v.get("value"))).collect(Collectors.toList());
             } catch (IllegalArgumentException e) {
                 System.out.println("Unable to get JWT Token");
             } catch (ExpiredJwtException e) {
@@ -61,7 +63,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 // Once we get the token validate it.
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             this.jwtUserDetailsService.setId(id);
-            this.jwtUserDetailsService.setClaims(claims);
+            this.jwtUserDetailsService.setClaims(userClaims);
             User userDetails = this.jwtUserDetailsService.loadUserByUsername(username);
 
             if (jwtTokenUtil.validateToken(jwtToken, userDetails)) {

@@ -18,6 +18,7 @@ public class JwtController {
      */
     @GetMapping("/testjwt")
     public ResponseEntity<?> getFakeResult(@AuthenticationPrincipal SessionUser sUser) {
+        sUser.getClaims().stream().forEach(System.out::println);
         try {
             return ResponseEntity.ok("succes");
         } catch (Exception ex) {

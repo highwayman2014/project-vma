@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @CrossOrigin
 public class JwtAuthenticationController {
@@ -33,9 +36,14 @@ public class JwtAuthenticationController {
         else {
           //  log.info(String.format("User %s is trying to authenticate", userName));
         }
+        Map<String, String> userInfo = new HashMap<>();
+        userInfo.put("username", userName);
+        userInfo.put("domainName", authenticationRequest.getDomainName());
+        userInfo.put("displayName", authenticationRequest.getDisplayName());
+        userInfo.put("email", authenticationRequest.getEmail());
 
         try {
-            String token = authenticationService.getAuthToken(userName);
+            String token = authenticationService.getAuthToken(userInfo);
             return ResponseEntity.ok(new JwtResponse(token));
         } catch (UserNotFoundException e) {
             //log.info(String.format("User %s not found", userName));
